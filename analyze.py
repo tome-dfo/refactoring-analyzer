@@ -101,7 +101,5 @@ if __name__=="__main__":
     complexity_result = calculate_complexity(files)
     filechange_result = count_filechanges(complexity_result, args.path)
     for r in complexity_result:
-        for b in r.blocks:
-            print(b)
         print(f'{r.filename} - {r.file_avg_complexity} - {r.file_changes}')
     

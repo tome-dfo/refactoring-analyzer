@@ -90,8 +90,7 @@ def calculate_complexity(files):
 def count_filechanges(files, repo_path):
     repo = git.Repo(repo_path)
     for f in files:
-        relative_path = f.fullpath.replace(repo_path,'')
-        file_commits_generator = repo.iter_commits(all=True, max_count=1000, paths=relative_path)
+        file_commits_generator = repo.iter_commits(all=True, max_count=1000, paths=f.fullpath)
         commits_for_file = [c for c in file_commits_generator]
         f.file_changes=len(commits_for_file)
 

@@ -125,7 +125,7 @@ def print_results(result):
         print(f'   - Number of commits: {r.file_changes}')
         print(f'   Code Blocks:')
         for b in r.blocks:
-            print(f'   |-> {b.type:<9} {b.name:<30}: '+f'{b.rank} ({b.cc_score})')
+            print(f'   |-> {b.type:<9} {b.name:<60}: '+f'{b.rank} ({b.cc_score})')
 
 if __name__=="__main__":
     args = parse_arguments()

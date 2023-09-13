@@ -5,7 +5,8 @@ import os
 from dataclasses import dataclass
 import radon.complexity as radon
 import git
-import pprint
+import pandas as pd
+import matplotlib.pyplot as plt
 
 @dataclass
 class FileComplexity:
@@ -20,6 +21,7 @@ class Block:
     type: str
     name: str
     cc_score: int
+    rank: str
 
 def parse_arguments():
     """
@@ -75,10 +77,12 @@ def calculate_complexity(files):
         with open(f.fullpath,'r', errors='ignore') as file_obj:
             cc = radon.cc_visit(file_obj.read())
             for block in cc:
+                print(block)
                 code_blocks.append(Block(
                     type=type(block).__name__,
                     name=block.name,
-                    cc_score=block.complexity
+                    cc_score=block.complexity,
+                    rank=rank_by_score(block.complexity)
                 ))
                 sum_complexity+=block.complexity
         f.blocks = code_blocks
@@ -87,6 +91,27 @@ def calculate_complexity(files):
         else:
             f.file_avg_complexity = 0
     return files
+
+def rank_by_score(score):
+    ''' CC score	Rank	Risk
+        1 - 5	    A	    low - simple block
+        6 - 10	    B	    low - well structured and stable block
+        11 - 20	    C	    moderate - slightly complex block
+        21 - 30	    D	    more than moderate - more complex block
+        31 - 40	    E	    high - complex block, alarming
+        41+	        F	    very high - error-prone, unstable block'''
+    if 1 <= score <= 5:
+        return 'A'
+    elif 6 <= score <= 10:
+        return 'B'
+    elif 11 <= score <= 20:
+        return 'C'
+    elif 21 <= score <= 30:
+        return 'D'
+    elif 31 <= score <= 40:
+        return 'E'
+    elif score >= 41:
+        return 'F'
 
 def count_filechanges(files, repo_path):
     repo = git.Repo(repo_path)
@@ -98,17 +123,20 @@ def count_filechanges(files, repo_path):
 def print_results(result):
     for r in result:
         print(f'|-> {r.filename}')
-        print(f'   - Average Cyclomatic Complexity: {r.file_avg_complexity}')
+        print(f'   - Average Cyclomatic Complexity: {r.file_avg_complexity} (Rank {rank_by_score(r.file_avg_complexity)})')
         print(f'   - Number of commits: {r.file_changes}')
         print(f'   Code Blocks:')
         for b in r.blocks:
-            print(f'   |-> {b.type} {b.name}: {b.cc_score}')
+            print(f'   |-> {b.type} {b.name}: {b.rank} ({b.cc_score})')
+
+def eisenhower_grouping(data):
+    
 
 if __name__=="__main__":
     args = parse_arguments()
     files = find_files(args.path)
     complexity_result = calculate_complexity(files)
     filechange_result = count_filechanges(complexity_result, args.path)
-    print(complexity_result)
+    print_results(complexity_result)
         
     

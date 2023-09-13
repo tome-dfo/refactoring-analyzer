@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass
 import radon.complexity as radon
 import git
+import pprint
 
 @dataclass
 class FileComplexity:
@@ -71,7 +72,7 @@ def calculate_complexity(files):
     for f in files:
         code_blocks = []
         sum_complexity = 0
-        with open(f.fullpath,'r') as file_obj:
+        with open(f.fullpath,'r', errors='ignore') as file_obj:
             cc = radon.cc_visit(file_obj.read())
             for block in cc:
                 code_blocks.append(Block(
@@ -80,7 +81,7 @@ def calculate_complexity(files):
                     cc_score=block.complexity
                 ))
                 sum_complexity+=block.complexity
-        f.blocks.append(code_blocks)
+        f.blocks = code_blocks
         if sum_complexity > 0 and len(code_blocks) > 0:
             f.file_avg_complexity = sum_complexity/len(code_blocks)
         else:
@@ -100,5 +101,11 @@ if __name__=="__main__":
     complexity_result = calculate_complexity(files)
     filechange_result = count_filechanges(complexity_result, args.path)
     for r in complexity_result:
-        print(f'{r.filename} - {r.file_avg_complexity} - {r.file_changes}')
+        print(f'|-> {r.filename}')
+        print(f'   - Average Cyclomatic Complexity: {r.file_avg_complexity}')
+        print(f'   - Number of commits: {r.file_changes}')
+        print(f'   Code Blocks:')
+        for b in r.blocks:
+            print(f'   |-> {b.type} {b.name}: {b.cc_score}')
+        
     

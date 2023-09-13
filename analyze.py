@@ -5,8 +5,6 @@ import os
 from dataclasses import dataclass
 import radon.complexity as radon
 import git
-import pandas as pd
-import matplotlib.pyplot as plt
 
 @dataclass
 class FileComplexity:
@@ -77,7 +75,6 @@ def calculate_complexity(files):
         with open(f.fullpath,'r', errors='ignore') as file_obj:
             cc = radon.cc_visit(file_obj.read())
             for block in cc:
-                print(block)
                 code_blocks.append(Block(
                     type=type(block).__name__,
                     name=block.name,
@@ -121,22 +118,22 @@ def count_filechanges(files, repo_path):
         f.file_changes=len(commits_for_file)
 
 def print_results(result):
+    print('{:*^80}'.format(' RESULTS '))
     for r in result:
         print(f'|-> {r.filename}')
         print(f'   - Average Cyclomatic Complexity: {r.file_avg_complexity} (Rank {rank_by_score(r.file_avg_complexity)})')
         print(f'   - Number of commits: {r.file_changes}')
         print(f'   Code Blocks:')
         for b in r.blocks:
-            print(f'   |-> {b.type} {b.name}: {b.rank} ({b.cc_score})')
-
-def eisenhower_grouping(data):
-    
+            print(f'   |-> {b.type:<9} {b.name:<30}: '+f'{b.rank} ({b.cc_score})')
 
 if __name__=="__main__":
     args = parse_arguments()
+    print(f'Analyzing {args.path}...')
     files = find_files(args.path)
     complexity_result = calculate_complexity(files)
     filechange_result = count_filechanges(complexity_result, args.path)
+    
     print_results(complexity_result)
         
     
